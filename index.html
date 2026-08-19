@@ -163,27 +163,32 @@
         runPhotoSlideshow();               // 啟動輪播
     });
 
-    // 階段 1：執行照片輪播（支援每張獨立放大）
+    // 階段 1：執行照片輪播（解決閃爍問題）
     function runPhotoSlideshow() {
         if (currentPhotoIndex < photos.length) {
-            // 讓當前照片進入退場狀態（維持放大，淡出 1 秒）
+            // 讓當前照片進入退場狀態（維持放大，純粹淡出 1 秒）
             photoEl.classList.remove('active');
             photoEl.classList.add('fading');
             
             setTimeout(() => {
-                // 1 秒後畫面全黑，此時切換圖片並重設縮放狀態
+                // 1 秒後畫面完全變黑，此時拿掉退場狀態
                 photoEl.classList.remove('fading');
+                // 換上下一張照片的檔案路徑
                 photoEl.src = photos[currentPhotoIndex];
                 
-                // 強制瀏覽器重整尺寸狀態，並賦予新照片放大動畫
-                void photoEl.offsetWidth; 
-                photoEl.classList.add('active');
-                
-                currentPhotoIndex++;
-                setTimeout(runPhotoSlideshow, photoDuration);
-            }, 1000); 
+                // 👉 關鍵修正：給瀏覽器 100 毫秒的「反應時間」去讀取並替換新照片
+                // 等到確認舊照片徹底消失了，才重新啟動淡入與放大動畫
+                setTimeout(() => {
+                    photoEl.classList.add('active');
+                    currentPhotoIndex++;
+                    
+                    // 開始倒數這張照片的停留時間
+                    setTimeout(runPhotoSlideshow, photoDuration);
+                }, 500); 
+
+            }, 1000); // 配合 fading 的 1 秒淡出時間
         } else {
-            // 照片全數播完，進入文字 1
+            // 照片播完，進入文字 1
             transitionTo(layerPhotos, layerText1, runText1);
         }
     }
