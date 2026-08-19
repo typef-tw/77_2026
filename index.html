@@ -25,7 +25,7 @@
             justify-content: center;
             align-items: center;
             opacity: 0;
-            transition: opacity 2s ease-in-out; /* 統一的 2.5 秒柔和淡入淡出 */
+            transition: opacity 1.5s ease-in-out; /* 統一的 2.5 秒柔和淡入淡出 */
             z-index: 1;
             pointer-events: none; /* 避免點擊干擾 */
         }
@@ -43,11 +43,11 @@
             max-height: 100%;
             object-fit: contain;
             transform: scale(1);
-            transition: opacity 2s ease-in-out, transform 8s linear; /* 緩慢放大 */
+            transition: opacity 2s ease-in-out, transform 6s linear; /* 緩慢放大 */
         }
         #photoDisplay.active {
             opacity: 1;
-            transform: scale(1.08); /* 照片逐漸放大至 1.08 倍 */
+            transform: scale(1.1); /* 照片逐漸放大至 1.08 倍 */
         }
 
         /* 第二/三階段：文字排版設定 */
@@ -109,7 +109,7 @@
         <div class="text-content">
             謝謝妳一路以來的包容與付出<br>
             陪我一同經歷各種美好的體驗<br>
-            七夕情人節快樂
+            祝你七夕情人節快樂
         </div>
     </div>
 
@@ -125,9 +125,9 @@
     const photos = ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.jpg', '08.jpg', '09.jpg'];
     
     // 2. 節奏控制 (單位：毫秒，1000毫秒 = 1秒)
-    const photoDuration = 6000;  // 每張照片停留時間
-    const text1Duration = 6000;  // 第一段文字閱讀時間
-    const text2Duration = 6000;  // 第二段文字閱讀時間
+    const photoDuration = 5000;  // 每張照片停留時間
+    const text1Duration = 7000;  // 第一段文字閱讀時間
+    const text2Duration = 7000;  // 第二段文字閱讀時間
 
     // ---------------- 核心邏輯 ----------------
     let currentPhotoIndex = 0;
@@ -199,7 +199,7 @@
         setTimeout(() => {
             newLayer.classList.add('show');
             if (callback) callback();
-        }, 2000); 
+        }, 1500); 
     }
 </script>
 
