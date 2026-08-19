@@ -25,7 +25,7 @@
             justify-content: center;
             align-items: center;
             opacity: 0;
-            transition: opacity 1s ease-in-out; /* 統一的 2.5 秒柔和淡入淡出 */
+            transition: opacity 1s ease-in-out; 
             z-index: 1;
             pointer-events: none; /* 避免點擊干擾 */
         }
@@ -44,13 +44,14 @@
             object-fit: contain;
             transform: scale(1);
             opacity: 0;
-            /* 👉 修正這裡：淡出只需 1 秒。並且加入 1s 的延遲，等畫面全黑了才把尺寸縮回原狀 */
+            /* 👉 新增：開啟手機硬體加速，解決卡頓與掉幀 */
+            will-change: transform, opacity; 
+            -webkit-transform: translateZ(0);
             transition: opacity 1s ease-in-out, transform 0s linear 1s; 
         }
         #photoDisplay.active {
             opacity: 1;
             transform: scale(1.1);
-            /* 👉 修正這裡：淡入 1 秒，並同時執行 4 秒的緩慢放大 (無延遲) */
             transition: opacity 1s ease-in-out, transform 4s linear 0s; 
         }
 
@@ -119,8 +120,8 @@
 
     <!-- 階段 4: 最終影片圖層 -->
     <div id="layer-video" class="layer">
-        <!-- playsinline 確保手機上不會強制全螢幕跳出 -->
-        <video id="finalVideo" src="video.mp4" playsinline></video>
+        <!-- 👉 新增：加入 muted 與 preload="auto" 確保手機允許播放與載入 -->
+        <video id="finalVideo" src="video.mp4" playsinline muted preload="auto"></video>
     </div>
 
 <script>
@@ -166,7 +167,7 @@
                 currentPhotoIndex++;
                 
                 setTimeout(runPhotoSlideshow, photoDuration);
-            }, 1000); // 1.5秒的換圖呼吸空檔
+            }, 1000); 
         } else {
             // 照片播完，進入文字 1
             transitionTo(layerPhotos, layerText1, runText1);
@@ -189,9 +190,6 @@
 
     // 階段 4：播放最終影片
     function runVideo() {
-        // 如果你的影片有自己的聲音，建議在這裡把背景音樂暫停或設定淡出
-        //bgm.pause(); 
-        
         finalVideo.play();
     }
 
@@ -199,7 +197,6 @@
     function transitionTo(oldLayer, newLayer, callback) {
         oldLayer.classList.remove('show');
         
-        // 等待 2.5 秒（配合 CSS 的 transition 時間）讓畫面完全變黑後，再讓新圖層浮現
         setTimeout(() => {
             newLayer.classList.add('show');
             if (callback) callback();
