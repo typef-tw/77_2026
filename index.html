@@ -4,34 +4,69 @@
     <meta charset="UTF-8">
     <title>For You</title>
     <style>
+        /* 基礎設定：全黑背景、隱藏捲動條 */
         body {
             margin: 0;
             background-color: #000;
+            color: #fff;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             overflow: hidden;
+            font-family: 'serif'; /* 優雅的襯線字體 */
         }
-        
-        /* 圖片容器與特效 */
+
+        /* 讓所有圖層都絕對置中，並預設隱藏 (透明度 0) */
+        .layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 2s ease-in-out; /* 統一的 2.5 秒柔和淡入淡出 */
+            z-index: 1;
+            pointer-events: none; /* 避免點擊干擾 */
+        }
+
+        /* 當圖層加上 .show 類別時，就會浮現 */
+        .layer.show {
+            opacity: 1;
+            z-index: 2;
+            pointer-events: auto;
+        }
+
+        /* 第一階段：照片特效專區 */
         #photoDisplay {
-            display: none;
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
-            opacity: 0;
-            /* 緩慢放大與淡入淡出的組合技 */
-            transition: opacity 2s ease-in-out, transform 10s linear;
             transform: scale(1);
+            transition: opacity 2s ease-in-out, transform 8s linear; /* 緩慢放大 */
         }
-
-        /* 當圖片獲得 .active 類別時，觸發放大與顯示 */
         #photoDisplay.active {
             opacity: 1;
-            transform: scale(1.1); 
+            transform: scale(1.08); /* 照片逐漸放大至 1.08 倍 */
         }
 
+        /* 第二/三階段：文字排版設定 */
+        .text-content {
+            font-size: 26px;
+            line-height: 2.2;
+            text-align: center;
+            letter-spacing: 3px;
+            padding: 20px;
+        }
+
+        /* 第四階段：影片設定 */
+        #finalVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* 開場按鈕 */
         #playBtn {
             padding: 15px 40px;
             font-size: 20px;
@@ -47,80 +82,125 @@
             background: #fff;
             color: #000;
         }
-
-        #endingText {
-            display: none;
-            color: #fff;
-            font-family: 'serif';
-            font-size: 24px;
-            line-height: 2;
-            text-align: center;
-            opacity: 0;
-            transition: opacity 3s ease-in;
-            z-index: 10;
-        }
     </style>
 </head>
 <body>
 
-    <button id="playBtn">CLICK TO START</button>
-    <img id="photoDisplay" src="" alt="memory">
-    <!-- 隱藏的背景音樂播放器 -->
-    <audio id="bgm" src="MP3.mp3"></audio>
-    
-    <div id="endingText">
-        謝謝妳撐起這個家<br>
-        七夕情人節快樂
+    <!-- 啟動開關 -->
+    <button id="playBtn">♥</button>
+    <audio id="bgm" src="music.mp3"></audio>
+
+    <!-- 階段 1: 照片輪播圖層 -->
+    <div id="layer-photos" class="layer">
+        <img id="photoDisplay" src="" alt="memory">
+    </div>
+
+    <!-- 階段 2: 文字 1 圖層 -->
+    <div id="layer-text1" class="layer">
+        <div class="text-content">
+            親愛的老婆，時間過得好快<br>
+            看著文豪從懵懂無知的嬰兒，長成懵懂無知的屁孩<br>
+            這些點點滴滴，都是我們珍貴的回憶
+        </div>
+    </div>
+
+    <!-- 階段 3: 文字 2 圖層 -->
+    <div id="layer-text2" class="layer">
+        <div class="text-content">
+            謝謝妳一路以來的包容與付出<br>
+            陪我一同經歷各種美好的體驗<br>
+            七夕情人節快樂
+        </div>
+    </div>
+
+    <!-- 階段 4: 最終影片圖層 -->
+    <div id="layer-video" class="layer">
+        <!-- playsinline 確保手機上不會強制全螢幕跳出 -->
+        <video id="finalVideo" src="video.mp4" playsinline></video>
     </div>
 
 <script>
-    // 放入你的照片檔名陣列
-    const photos = [
-        'slider01.jpg',
-        'gallery01.jpg'
-    ];
+    // ---------------- 配置區 ----------------
+    // 1. 照片素材清單
+    const photos = ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.jpg', '08.jpg', '09.jpg'];
     
-    let currentIndex = 0;
-    const photoEl = document.getElementById('photoDisplay');
+    // 2. 節奏控制 (單位：毫秒，1000毫秒 = 1秒)
+    const photoDuration = 6000;  // 每張照片停留時間
+    const text1Duration = 6000;  // 第一段文字閱讀時間
+    const text2Duration = 6000;  // 第二段文字閱讀時間
+
+    // ---------------- 核心邏輯 ----------------
+    let currentPhotoIndex = 0;
     const playBtn = document.getElementById('playBtn');
-    const endingText = document.getElementById('endingText');
     const bgm = document.getElementById('bgm');
+    const photoEl = document.getElementById('photoDisplay');
+    const finalVideo = document.getElementById('finalVideo');
 
-    // 設定每張照片停留的時間 (毫秒)，例如 6000 = 6秒
-    const displayDuration = 6000; 
+    // 圖層 DOM 節點
+    const layerPhotos = document.getElementById('layer-photos');
+    const layerText1 = document.getElementById('layer-text1');
+    const layerText2 = document.getElementById('layer-text2');
+    const layerVideo = document.getElementById('layer-video');
 
-    function showNextPhoto() {
-        if (currentIndex < photos.length) {
-            // 先褪去效果
+    // 啟動按鈕事件
+    playBtn.addEventListener('click', () => {
+        playBtn.style.display = 'none'; // 隱藏按鈕
+        bgm.play();                     // 播放背景音樂
+        
+        layerPhotos.classList.add('show'); // 顯示照片圖層
+        runPhotoSlideshow();               // 啟動輪播
+    });
+
+    // 階段 1：執行照片輪播
+    function runPhotoSlideshow() {
+        if (currentPhotoIndex < photos.length) {
             photoEl.classList.remove('active');
             
-            // 短暫延遲後換圖並重新加入特效
             setTimeout(() => {
-                photoEl.src = photos[currentIndex];
+                photoEl.src = photos[currentPhotoIndex];
                 photoEl.classList.add('active');
-                currentIndex++;
+                currentPhotoIndex++;
                 
-                // 排程下一張照片
-                setTimeout(showNextPhoto, displayDuration);
-            }, 2000); // 2秒的淡出過場時間
-            
+                setTimeout(runPhotoSlideshow, photoDuration);
+            }, 1000); // 1.5秒的換圖呼吸空檔
         } else {
-            // 照片播完，顯示結尾文字
-            photoEl.style.display = 'none';
-            endingText.style.display = 'block';
-            setTimeout(() => {
-                endingText.style.opacity = 1;
-            }, 100);
+            // 照片播完，進入文字 1
+            transitionTo(layerPhotos, layerText1, runText1);
         }
     }
 
-    playBtn.addEventListener('click', () => {
-        playBtn.style.display = 'none';
-        photoEl.style.display = 'block';
+    // 階段 2：顯示文字 1
+    function runText1() {
+        setTimeout(() => {
+            transitionTo(layerText1, layerText2, runText2);
+        }, text1Duration);
+    }
+
+    // 階段 3：顯示文字 2
+    function runText2() {
+        setTimeout(() => {
+            transitionTo(layerText2, layerVideo, runVideo);
+        }, text2Duration);
+    }
+
+    // 階段 4：播放最終影片
+    function runVideo() {
+        // 如果你的影片有自己的聲音，建議在這裡把背景音樂暫停或設定淡出
+        //bgm.pause(); 
         
-        bgm.play(); // 開始播放音樂
-        showNextPhoto(); // 開始輪播照片
-    });
+        finalVideo.play();
+    }
+
+    // 共用轉場函數：負責把「舊圖層」淡出，把「新圖層」淡入
+    function transitionTo(oldLayer, newLayer, callback) {
+        oldLayer.classList.remove('show');
+        
+        // 等待 2.5 秒（配合 CSS 的 transition 時間）讓畫面完全變黑後，再讓新圖層浮現
+        setTimeout(() => {
+            newLayer.classList.add('show');
+            if (callback) callback();
+        }, 2000); 
+    }
 </script>
 
 </body>
