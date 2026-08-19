@@ -37,22 +37,26 @@
             pointer-events: auto;
         }
 
-        /* 第一階段：照片特效專區 */
+/* 第一階段：照片特效專區 */
         #photoDisplay {
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
             transform: scale(1);
             opacity: 0;
-            /* 👉 新增：開啟手機硬體加速，解決卡頓與掉幀 */
-            will-change: transform, opacity; 
+            will-change: transform, opacity;
             -webkit-transform: translateZ(0);
-            transition: opacity 1s ease-in-out, transform 0s linear 1s; 
+            
+            /* 👉 魔法在這裡：淡出只要 1 秒。但我們把「縮小」的過程拉長到 99 秒！ */
+            transition: opacity 1s ease-in-out, transform 99s linear; 
         }
+        
         #photoDisplay.active {
             opacity: 1;
             transform: scale(1.1);
-            transition: opacity 1s ease-in-out, transform 4s linear 0s; 
+            
+            /* 👉 照片出現時：淡入 1 秒，並用 5 秒鐘正常緩慢放大 */
+            transition: opacity 1s ease-in-out, transform 5s linear; 
         }
 
         /* 第二/三階段：文字排版設定 */
