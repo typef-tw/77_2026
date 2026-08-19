@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>For You</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* 圖片容器與特效 */
+        #photoDisplay {
+            display: none;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            opacity: 0;
+            /* 緩慢放大與淡入淡出的組合技 */
+            transition: opacity 2s ease-in-out, transform 10s linear;
+            transform: scale(1);
+        }
+
+        /* 當圖片獲得 .active 類別時，觸發放大與顯示 */
+        #photoDisplay.active {
+            opacity: 1;
+            transform: scale(1.1); 
+        }
+
+        #playBtn {
+            padding: 15px 40px;
+            font-size: 20px;
+            color: #fff;
+            background: transparent;
+            border: 1px solid #fff;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: 0.3s;
+            z-index: 10;
+        }
+        #playBtn:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        #endingText {
+            display: none;
+            color: #fff;
+            font-family: 'serif';
+            font-size: 24px;
+            line-height: 2;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 3s ease-in;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <button id="playBtn">CLICK TO START</button>
+    <img id="photoDisplay" src="" alt="memory">
+    <!-- 隱藏的背景音樂播放器 -->
+    <audio id="bgm" src="your-song.mp3"></audio>
+    
+    <div id="endingText">
+        謝謝妳撐起這個家<br>
+        七夕情人節快樂
+    </div>
+
+<script>
+    // 放入你的照片檔名陣列
+    const photos = [
+        'slider01.jpg',
+        'gallery01.jpg'
+    ];
+    
+    let currentIndex = 0;
+    const photoEl = document.getElementById('photoDisplay');
+    const playBtn = document.getElementById('playBtn');
+    const endingText = document.getElementById('endingText');
+    const bgm = document.getElementById('bgm');
+
+    // 設定每張照片停留的時間 (毫秒)，例如 6000 = 6秒
+    const displayDuration = 6000; 
+
+    function showNextPhoto() {
+        if (currentIndex < photos.length) {
+            // 先褪去效果
+            photoEl.classList.remove('active');
+            
+            // 短暫延遲後換圖並重新加入特效
+            setTimeout(() => {
+                photoEl.src = photos[currentIndex];
+                photoEl.classList.add('active');
+                currentIndex++;
+                
+                // 排程下一張照片
+                setTimeout(showNextPhoto, displayDuration);
+            }, 2000); // 2秒的淡出過場時間
+            
+        } else {
+            // 照片播完，顯示結尾文字
+            photoEl.style.display = 'none';
+            endingText.style.display = 'block';
+            setTimeout(() => {
+                endingText.style.opacity = 1;
+            }, 100);
+        }
+    }
+
+    playBtn.addEventListener('click', () => {
+        playBtn.style.display = 'none';
+        photoEl.style.display = 'block';
+        
+        //bgm.play(); // 開始播放音樂
+        showNextPhoto(); // 開始輪播照片
+    });
+</script>
+
+</body>
+</html>
