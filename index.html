@@ -46,17 +46,20 @@
             opacity: 0;
             will-change: transform, opacity;
             -webkit-transform: translateZ(0);
-            
-            /* 👉 魔法在這裡：淡出只要 1 秒。但我們把「縮小」的過程拉長到 99 秒！ */
-            transition: opacity 1s ease-in-out, transform 99s linear; 
         }
-        
+
+        /* 狀態 1：進場與播放（淡入 1 秒，緩慢放大 5 秒） */
         #photoDisplay.active {
             opacity: 1;
             transform: scale(1.1);
-            
-            /* 👉 照片出現時：淡入 1 秒，並用 5 秒鐘正常緩慢放大 */
-            transition: opacity 1s ease-in-out, transform 5s linear; 
+            transition: opacity 1s ease-in-out, transform 5s linear;
+        }
+
+        /* 狀態 2：退場中（維持 1.1 倍放大狀態，純淡出 1 秒） */
+        #photoDisplay.fading {
+            opacity: 0;
+            transform: scale(1.1);
+            transition: opacity 1s ease-in-out;
         }
 
         /* 第二/三階段：文字排版設定 */
@@ -160,20 +163,27 @@
         runPhotoSlideshow();               // 啟動輪播
     });
 
-    // 階段 1：執行照片輪播
+    // 階段 1：執行照片輪播（支援每張獨立放大）
     function runPhotoSlideshow() {
         if (currentPhotoIndex < photos.length) {
+            // 讓當前照片進入退場狀態（維持放大，淡出 1 秒）
             photoEl.classList.remove('active');
+            photoEl.classList.add('fading');
             
             setTimeout(() => {
+                // 1 秒後畫面全黑，此時切換圖片並重設縮放狀態
+                photoEl.classList.remove('fading');
                 photoEl.src = photos[currentPhotoIndex];
-                photoEl.classList.add('active');
-                currentPhotoIndex++;
                 
+                // 強制瀏覽器重整尺寸狀態，並賦予新照片放大動畫
+                void photoEl.offsetWidth; 
+                photoEl.classList.add('active');
+                
+                currentPhotoIndex++;
                 setTimeout(runPhotoSlideshow, photoDuration);
             }, 1000); 
         } else {
-            // 照片播完，進入文字 1
+            // 照片全數播完，進入文字 1
             transitionTo(layerPhotos, layerText1, runText1);
         }
     }
