@@ -25,7 +25,7 @@
             justify-content: center;
             align-items: center;
             opacity: 0;
-            transition: opacity 1s ease-in-out; /* 統一的 2.5 秒柔和淡入淡出 */
+            transition: opacity 2s ease-in-out; /* 統一的 2.5 秒柔和淡入淡出 */
             z-index: 1;
             pointer-events: none; /* 避免點擊干擾 */
         }
@@ -200,7 +200,7 @@
         setTimeout(() => {
             newLayer.classList.add('show');
             if (callback) callback();
-        }, 1000); 
+        }, 2000); 
     }
 </script>
 
